@@ -52,13 +52,20 @@ def main():
     pods = kubernetes.client.CoreV1Api().list_namespaced_pod(args.namespace, label_selector=label_selector).items
     pods = [pod.metadata.name for pod in pods]
 
+    if not pods:
+        print('No running pods with selector', label_selector, file=sys.stderr)
+        return sys.exit(1)
+
+    pod = pods[0]
+    print('Executing command in pod', pod, file=sys.stderr)
+
     kubectl_args = [
         'kubectl',
         'exec',
         '--namespace',
         args.namespace,
     ] + unknown_args + [
-        pods[0],
+        pod,
         '--'
     ] + args.command
 
