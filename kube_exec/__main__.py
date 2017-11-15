@@ -4,6 +4,7 @@ import argparse
 import subprocess
 
 import kubernetes
+import kubernetes.client.rest
 
 
 class Resource:
@@ -78,7 +79,15 @@ def get_kind2resource_map():
     for api_class in kubernetes.client.__dict__.values():
         if hasattr(api_class, 'get_api_resources'):
             api = api_class()
-            for descriptor in api.get_api_resources().resources:
+
+            try:
+                response = api.get_api_resources()
+            except kubernetes.client.rest.ApiException as e:
+                if e.status == 404:
+                    continue
+                raise e
+
+            for descriptor in response.resources:
                 resource = Resource(api, descriptor)
                 name2resource_map[descriptor.kind.lower()] = resource
                 if descriptor.short_names:
