@@ -56,19 +56,17 @@ def main():
         print('No running pods with selector', label_selector, file=sys.stderr)
         return sys.exit(1)
 
-    pod = pods[0]
-    print('Executing command in pod', pod, file=sys.stderr)
-
     kubectl_args = [
         'kubectl',
         'exec',
         '--namespace',
         args.namespace,
     ] + unknown_args + [
-        pod,
+        pods[0],
         '--'
     ] + args.command
 
+    print('Executing command', ' '.join(kubectl_args), file=sys.stderr)
     result = subprocess.run(kubectl_args)
     sys.exit(result.returncode)
 
